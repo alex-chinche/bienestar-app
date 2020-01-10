@@ -1,8 +1,16 @@
 <?php
 
-
 Route::post('loginUser', 'UserController@loginUser');
 
 Route::post('createUser', 'UserController@createUser');
 
-Route::get('showApps', 'ApplicationsController@showApps')->middleware('check_token');
+Route::post('rememberPassword', 'UserController@rememberPassword');
+
+
+Route::group(['middleware' => ['auth']], function () {
+    Route::post('showApps', 'UserController@showApps');
+});
+
+
+
+//https://img.utdstc.com/icons/whatsapp-messenger-android.png:s
