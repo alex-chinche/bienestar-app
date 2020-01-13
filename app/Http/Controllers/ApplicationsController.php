@@ -41,7 +41,7 @@ class ApplicationsController extends Controller
         for ($i = 0; $i < count($appsList); $i++) 
         {
             $application = new Application();
-            $application->name = "hola";
+            $application->name = $appsList[$i];
             $application->icon = "icono1";
             $application->save();
         }
