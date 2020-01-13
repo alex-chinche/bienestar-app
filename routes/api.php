@@ -6,9 +6,8 @@ Route::post('createUser', 'UserController@createUser');
 
 Route::post('rememberPassword', 'UserController@rememberPassword');
 
-
 Route::group(['middleware' => ['auth']], function () {
-    Route::post('showApps', 'UserController@showApps');
+    Route::post('showApps', 'ApplicationsController@showApps');
 });
 
 
