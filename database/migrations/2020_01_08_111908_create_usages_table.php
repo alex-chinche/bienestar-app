@@ -15,6 +15,13 @@ class CreateUsagesTable extends Migration
     {
         Schema::create('usages', function (Blueprint $table) {
             $table->increments('id');
+            $table->integer('user_id')->unsigned();
+            $table->integer('application_id')->unsigned();
+            $table->foreign('user_id')
+                ->references('id')->on('users');
+            $table->foreign('application_id')
+                ->references('id')->on('applications');
+            $table->date('date');
             $table->timestamps();
         });
     }
