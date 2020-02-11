@@ -14,23 +14,30 @@ class UserController extends Controller
         try {
             $user = new User();
             $user->name = $request->name;
-            if (strlen($request->password) < 5) {
+            $user->email = $request->email;
+            $user->password = $request->password;
+
+            $userAlreadyRegistered = User::where('email', $request->email)->first();
+
+            if ($userAlreadyRegistered) {
+                return response()->json([
+                    'message' => "Email already registered"
+                ], 401);
+            } else if (strlen($request->password) < 5 && !$userAlreadyRegistered) {
                 return response()->json([
                     'message' => "Password must be longer than 5"
                 ], 401);
+            } else {
+                $user->save();
+                $mainToken = new Token();
+                $finalToken = $mainToken->set_token($user->email);
+                return response()->json([
+                    'token' => $finalToken
+                ], 200);
             }
-            $user->email = $request->email;
-            $user->password = $request->password;
-            $user->save();
-            $token1 = new Token();
-            $token2 = $token1->set_token($user->email);
-
-            return response()->json([
-                'token' => $token2
-            ], 200);
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => "not possible to register"
+                'message' => "Not Connected"
             ], 401);
         }
     }
@@ -49,12 +56,12 @@ class UserController extends Controller
                 ], 200);
             } else {
                 return response()->json([
-                    'message' => "incorrect password"
+                    'message' => "Incorrect password"
                 ], 401);
             }
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => "incorrect email"
+                'message' => "Incorrect email"
             ], 401);
         }
     }
@@ -88,12 +95,12 @@ class UserController extends Controller
 
                 mail($to, $subject, $message, $headers);
                 return response()->json([
-                    'message' => "password changed correctly",
+                    'message' => "Password changed correctly",
                 ], 200);
             }
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => "incorrect email"
+                'message' => "Incorrect email"
             ], 401);
         }
     }
@@ -103,7 +110,7 @@ class UserController extends Controller
         $codedToken = $request->header("token");
         $emailFromToken = $tokenSummon->decode_token($codedToken);
         $user = User::where("email", $emailFromToken)->first();
-        
+
         return $user;
     }
 }

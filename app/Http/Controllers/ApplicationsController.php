@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Application;
 use App\Http\Middleware\CheckToken;
 use App\Helpers\Token;
@@ -34,9 +33,7 @@ class ApplicationsController extends Controller
         $appsLatitudeList = array_values($latitude);
         $appsLongitudeList = array_values($longitude);
         fclose($gestor);
-
         $appsFullInfo[] = $arrayAppNamesList + $appsTimesList + $appsLatitudeList + $appsLongitudeList;
-
 
         return $appsFullInfo;
     }
