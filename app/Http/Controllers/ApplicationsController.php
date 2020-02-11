@@ -29,13 +29,13 @@ class ApplicationsController extends Controller
             $latitude[] = $fila[3];
             $longitude[] = $fila[4];
         }
-        $appsNamesList = array_values($name);
+        $arrayAppNamesList = array_values($name);
         $appsTimesList = array_values($time);
         $appsLatitudeList = array_values($latitude);
         $appsLongitudeList = array_values($longitude);
         fclose($gestor);
 
-        $appsFullInfo[] = $appsNamesList + $appsTimesList + $appsLatitudeList + $appsLongitudeList;
+        $appsFullInfo[] = $arrayAppNamesList + $appsTimesList + $appsLatitudeList + $appsLongitudeList;
 
 
         return $appsFullInfo;
@@ -43,15 +43,13 @@ class ApplicationsController extends Controller
 
     public function showApps(Request $request)
     {
-
         $appsFullInfo = $this->readCSVinfo($request);
-        $appsNames = array_values(array_unique($appsFullInfo[0]));
-        $appInfo = [];
-        for ($i = 0; $i < count($appsNames); $i++) {
-            if (!Application::where("name", $appsNames[$i])->first()) {
+        $arrayAppNames = array_values(array_unique($appsFullInfo[0]));
+        $arrayAppIcons = [];
+        for ($i = 0; $i < count($arrayAppNames); $i++) {
+            if (!Application::where("name", $arrayAppNames[$i])->first()) {
                 $application = new Application();
-                $application->name = $appsNames[$i];
-
+                $application->name = $arrayAppNames[$i];
                 switch ($application->name) {
                     case "Whatsapp":
                         $application->icon = "https://lh3.googleusercontent.com/bYtqbOcTYOlgc6gqZ2rwb8lptHuwlNE75zYJu6Bn076-hTmvd96HH-6v7S0YUAAJXoJN";
@@ -75,15 +73,17 @@ class ApplicationsController extends Controller
                         $application->icon = "https://cdn3.vectorstock.com/i/1000x1000/50/07/http-404-not-found-error-message-hypertext-vector-20025007.jpg";
                         break;
                 }
-                $appInfo[$application->name] = $application->icon;
-
                 $application->save();
             }
+            array_push($arrayAppIcons, $application->icon);
+            $arrayInfo = [$arrayAppNames, $arrayAppIcons];
         }
-
         return response()->json(
-            $appInfo,
+            $arrayInfo,
             200
         );
     }
 }
+
+
+//applciation::all()    for each

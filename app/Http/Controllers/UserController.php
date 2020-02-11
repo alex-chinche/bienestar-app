@@ -11,17 +11,28 @@ class UserController extends Controller
 {
     public function createUser(Request $request)
     {
-        $user = new User();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = $request->password;
-        $user->save();
-        $token1 = new Token();
-        $token2 = $token1->set_token($user->email);
+        try {
+            $user = new User();
+            $user->name = $request->name;
+            if (strlen($request->password) < 5) {
+                return response()->json([
+                    'message' => "Password must be longer than 5"
+                ], 401);
+            }
+            $user->email = $request->email;
+            $user->password = $request->password;
+            $user->save();
+            $token1 = new Token();
+            $token2 = $token1->set_token($user->email);
 
-        return response()->json([
-            'token' => $token2
-        ], 200);
+            return response()->json([
+                'token' => $token2
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => "not possible to register"
+            ], 401);
+        }
     }
 
     public function loginUser(Request $request)
@@ -34,7 +45,6 @@ class UserController extends Controller
                 $token = new Token($data);
                 $encoded_token = $token->set_token($user->email);
                 return response()->json([
-                    'message' => "logged correctly",
                     'token' => $encoded_token
                 ], 200);
             } else {
@@ -86,5 +96,14 @@ class UserController extends Controller
                 'message' => "incorrect email"
             ], 401);
         }
-    }    
+    }
+    public function getUserFromToken(Request $request)
+    {
+        $tokenSummon = new Token;
+        $codedToken = $request->header("token");
+        $emailFromToken = $tokenSummon->decode_token($codedToken);
+        $user = User::where("email", $emailFromToken)->first();
+        
+        return $user;
+    }
 }
