@@ -22,6 +22,7 @@ class CreateUsagesTable extends Migration
             $table->foreign('application_id')
                 ->references('id')->on('applications');
             $table->date('date');
+            $table->time('time');
             $table->timestamps();
         });
     }

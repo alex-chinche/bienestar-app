@@ -30,10 +30,19 @@ class ApplicationsController extends Controller
         }
         $arrayAppNamesList = array_values($name);
         $appsTimesList = array_values($time);
+        $appsStatusList = array_values($status);
         $appsLatitudeList = array_values($latitude);
         $appsLongitudeList = array_values($longitude);
         fclose($gestor);
-        $appsFullInfo[] = $arrayAppNamesList + $appsTimesList + $appsLatitudeList + $appsLongitudeList;
+
+        $appsFullInfo = [];
+
+        array_push($appsFullInfo, $arrayAppNamesList);
+        array_push($appsFullInfo, $appsTimesList);
+        array_push($appsFullInfo, $appsStatusList);
+        array_push($appsFullInfo, $appsLatitudeList);
+        array_push($appsFullInfo, $appsLongitudeList);
+        
 
         return $appsFullInfo;
     }
@@ -42,7 +51,6 @@ class ApplicationsController extends Controller
     {
         $appsFullInfo = $this->readCSVinfo($request);
         $arrayAppNames = array_values(array_unique($appsFullInfo[0]));
-        $arrayAppIcons = [];
         for ($i = 0; $i < count($arrayAppNames); $i++) {
             if (!Application::where("name", $arrayAppNames[$i])->first()) {
                 $application = new Application();
@@ -71,16 +79,15 @@ class ApplicationsController extends Controller
                         break;
                 }
                 $application->save();
+            } else if ($applicationAlreadyRegistered = Application::where("name", $arrayAppNames[$i])->first()) {
+                var_dump("App  $applicationAlreadyRegistered->name  already exists.");
             }
-            array_push($arrayAppIcons, $application->icon);
-            $arrayInfo = [$arrayAppNames, $arrayAppIcons];
         }
         return response()->json(
-            $arrayInfo,
+            [
+                'message' => "Apps updated"
+            ],
             200
         );
     }
 }
-
-
-//applciation::all()    for each
