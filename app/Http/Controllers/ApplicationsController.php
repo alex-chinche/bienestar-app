@@ -80,7 +80,7 @@ class ApplicationsController extends Controller
                 }
                 $application->save();
             } else if ($applicationAlreadyRegistered = Application::where("name", $arrayAppNames[$i])->first()) {
-                var_dump("App  $applicationAlreadyRegistered->name  already exists.");
+                var_dump("App $applicationAlreadyRegistered->name  already exists.");
             }
         }
         return response()->json(
