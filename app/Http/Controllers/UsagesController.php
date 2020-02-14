@@ -19,6 +19,7 @@ class UsagesController extends Controller
         //$appsFullInfo es el array que contiene los arrays de  name, date, status, longitude, latitude
         $appsFullInfo = $appsInfo->readCSVinfo($request);
 
+        $arrayUniqueAppNames = array_unique(array_values($appsFullInfo[0]));
 
         $arrayNames = array_values($appsFullInfo[0]);
         $arrayTimes = array_values($appsFullInfo[1]);
@@ -32,10 +33,6 @@ class UsagesController extends Controller
         $arrayContainerOfAllInfo = [];
 
 
-
-
-
-        $totalDigitalTimeUsedInADay = 0;
         for ($i = 0; $i < count($arrayTimes); $i++) {
             $timeSaved = strtotime($arrayTimes[$i]);
             if ($arrayStatus[$i] == "opens") {
@@ -52,55 +49,25 @@ class UsagesController extends Controller
                     //Seconds used before midnight
                     $timeBeforeMidnight = strtotime(86400) - strtotime($dayHourOpened);
                     $digitaltimeBeforeMidnight = date("H:i:s", $timeBeforeMidnight);
-                    var_dump("Tiempo de uso de $arrayNames[$i] el dia $dateDayMinusOne es $digitaltimeBeforeMidnight");
                     array_push($arrayApps, $arrayNames[$i]);
-                    array_push($arrayTimeIntervaleOfADay, $digitaltimeBeforeMidnight);
-                    array_push($arrayDates, $dateDayMinusOne);
+                    array_push($arrayTimeIntervaleOfADay, strtotime($digitaltimeBeforeMidnight));
+                    array_push($arrayDates, strtotime($dateDayMinusOne));
 
-                    //new usage cut before midnight
-                    /*$usageCutBeforeMidnight = new Usage;
-                    $usageCutBeforeMidnight->user_id = $userSummon->id;
-                    $usageCutBeforeMidnight->application_id = $selectedAppBeforeMidnight->id;
-                    $usageCutBeforeMidnight->date = $dayMinusOne;
-                    $usageCutBeforeMidnight->time = $digitaltimeBeforeMidnight;
-
-                    $usageCutBeforeMidnight->save();
-                    */
                     //Seconds used after midnight
 
                     $timeAfterMidnight = strtotime($dayHourClosed);
                     $digitaltimeAfterMidnight = date("H:i:s", $timeAfterMidnight);
-                    var_dump("Tiempo de uso de $arrayNames[$i] el dia $dayOfYearClosed es $digitaltimeAfterMidnight");
                     array_push($arrayApps, $arrayNames[$i]);
-                    array_push($arrayTimeIntervaleOfADay, $digitaltimeAfterMidnight);
-                    array_push($arrayDates, $dayOfYearClosed);
+                    array_push($arrayTimeIntervaleOfADay, strtotime($digitaltimeAfterMidnight));
+                    array_push($arrayDates, strtotime($dayOfYearClosed));
 
-                    //new usage cut after midnight
-                    /*$usageCutAfterMidnight = new Usage;
-                    $usageCutAfterMidnight->user_id = $userSummon->id;
-                    $usageCutAfterMidnight->application_id = $selectedAppBeforeMidnight->id;
-                    $usageCutAfterMidnight->date = $dayOfYearClosed;
-                    $usageCutAfterMidnight->time = $digitaltimeAfterMidnight;
-
-                    $usageCutAfterMidnight->save();
-                    */
+                    //caso normal
                 } else {
                     $timeUsedPerDay = strtotime($dayHourClosed) - strtotime($dayHourOpened);
                     $digitalTimeUsedPerDay = date("H:i:s", $timeUsedPerDay);
-                    var_dump("Tiempo de uso de $arrayNames[$i] el dia $dayOfYearClosed es $digitalTimeUsedPerDay");
                     array_push($arrayApps, $arrayNames[$i]);
-                    array_push($arrayTimeIntervaleOfADay, $digitalTimeUsedPerDay);
-                    array_push($arrayDates, $dayOfYearClosed);
-
-
-                    //new normal usage
-                    /*$normalUsage = new Usage;
-                    $normalUsage->user_id = $userSummon->id;
-                    $normalUsage->application_id = $selectedAppBeforeMidnight->id;
-                    $normalUsage->date = $dayOfYearClosed;
-                    $normalUsage->time = $digitalTotalTimeUsedPerDay;
-                    $normalUsage->save();
-                    */
+                    array_push($arrayTimeIntervaleOfADay, strtotime($digitalTimeUsedPerDay));
+                    array_push($arrayDates, strtotime($dayOfYearClosed));
                 }
             }
         }
@@ -108,21 +75,49 @@ class UsagesController extends Controller
         array_push($arrayContainerOfAllInfo, $arrayApps);
         array_push($arrayContainerOfAllInfo, $arrayTimeIntervaleOfADay);
         array_push($arrayContainerOfAllInfo, $arrayDates);
+
         var_dump($arrayContainerOfAllInfo);
 
+        //////////////////
 
-        //crea los usages para un unico usuario
-        /*
-        for ($i = 0; $i < count($arrayUniqueNames); $i++) {
-            $gettingUser = new UserController;
-            $userSummon = $gettingUser->getUserFromToken($request);
-            $uniqueAppUsage = new Usage;
-            $uniqueAppUsage->user_id = $userSummon->id;
-            $uniqueAppUsage->application_id = ;
-            $uniqueAppUsage->date = ;
-            $uniqueAppUsage->time = ;
+        $arrayFinalApps = [];
+        $arrayFinalTimeIntervaleOfADay = [];
+        $arrayFinalDates = [];
+        $arrayFinalContainerOfAllInfo = [];
+
+        $pastName = $arrayApps[0];
+        $pastDate = $arrayDates[0];
+        $totalTime = $arrayTimeIntervaleOfADay[0];
+
+        for ($i = 1; $i < count($arrayApps) - 1; $i++) {
+            if ($arrayNames[$i] == $pastName && $arrayDates[$i] == $pastDate) {
+                $totalTime += $arrayTimeIntervaleOfADay[$i];
+                if ($i == count($arrayApps) - 2) {
+                    array_push($arrayFinalApps, $pastName);
+                    array_push($arrayFinalTimeIntervaleOfADay, $totalTime);
+                    array_push($arrayFinalDates, $pastDate);
+                }
+            } else {
+                var_dump($totalTime);
+                
+                array_push($arrayFinalApps, $pastName);
+                array_push($arrayFinalTimeIntervaleOfADay, $totalTime);
+                array_push($arrayFinalDates, $pastDate);
+                $totalTime = 0;
+            }
+            $pastName = $arrayNames[$i];
+            $totalTime += $arrayTimeIntervaleOfADay[$i];
+            $pastDate = $arrayDates[$i];
         }
-        */
+        var_dump("holaaaaaaaaaaaaaa");
+        var_dump(date("H:i:s", 3163276815));
+
+
+
+        array_push($arrayFinalContainerOfAllInfo, $arrayFinalApps);
+        array_push($arrayFinalContainerOfAllInfo, $arrayFinalTimeIntervaleOfADay);
+        array_push($arrayFinalContainerOfAllInfo, $arrayFinalDates);
+        var_dump($arrayFinalContainerOfAllInfo);
 
 
 
