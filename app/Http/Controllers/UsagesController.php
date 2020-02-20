@@ -19,9 +19,8 @@ class UsagesController extends Controller
         //$appsFullInfo es el array que contiene los arrays de  name, date, status, longitude, latitude
         $appsFullInfo = $appsInfo->readCSVinfo($request);
 
-        $arrayUniqueAppNames = array_unique(array_values($appsFullInfo[0]));
-
         $arrayNames = array_values($appsFullInfo[0]);
+        $arrayOrderedNames = sort($arrayNames);
         $arrayTimes = array_values($appsFullInfo[1]);
         $arrayStatus = array_values($appsFullInfo[2]);
         //dia del año Y/m/d
@@ -49,7 +48,7 @@ class UsagesController extends Controller
                     //Seconds used before midnight
                     $timeBeforeMidnight = strtotime(86400) - strtotime($dayHourOpened);
                     $digitaltimeBeforeMidnight = date("H:i:s", $timeBeforeMidnight);
-                    array_push($arrayApps, $arrayNames[$i]);
+                    array_push($arrayApps, $arrayOrderedNames[$i]);
                     array_push($arrayTimeIntervaleOfADay, strtotime($digitaltimeBeforeMidnight));
                     array_push($arrayDates, strtotime($dateDayMinusOne));
 
@@ -57,7 +56,7 @@ class UsagesController extends Controller
 
                     $timeAfterMidnight = strtotime($dayHourClosed);
                     $digitaltimeAfterMidnight = date("H:i:s", $timeAfterMidnight);
-                    array_push($arrayApps, $arrayNames[$i]);
+                    array_push($arrayApps, $arrayOrderedNames[$i]);
                     array_push($arrayTimeIntervaleOfADay, strtotime($digitaltimeAfterMidnight));
                     array_push($arrayDates, strtotime($dayOfYearClosed));
 
@@ -65,7 +64,7 @@ class UsagesController extends Controller
                 } else {
                     $timeUsedPerDay = strtotime($dayHourClosed) - strtotime($dayHourOpened);
                     $digitalTimeUsedPerDay = date("H:i:s", $timeUsedPerDay);
-                    array_push($arrayApps, $arrayNames[$i]);
+                    array_push($arrayApps, $arrayOrderedNames[$i]);
                     array_push($arrayTimeIntervaleOfADay, strtotime($digitalTimeUsedPerDay));
                     array_push($arrayDates, strtotime($dayOfYearClosed));
                 }
@@ -75,8 +74,6 @@ class UsagesController extends Controller
         array_push($arrayContainerOfAllInfo, $arrayApps);
         array_push($arrayContainerOfAllInfo, $arrayTimeIntervaleOfADay);
         array_push($arrayContainerOfAllInfo, $arrayDates);
-
-        var_dump($arrayContainerOfAllInfo);
 
         //////////////////
 
@@ -90,29 +87,20 @@ class UsagesController extends Controller
         $totalTime = $arrayTimeIntervaleOfADay[0];
 
         for ($i = 1; $i < count($arrayApps) - 1; $i++) {
-            if ($arrayNames[$i] == $pastName && $arrayDates[$i] == $pastDate) {
+            if ($arrayOrderedNames[$i] == $pastName && $arrayDates[$i] == $pastDate) {
                 $totalTime += $arrayTimeIntervaleOfADay[$i];
-                if ($i == count($arrayApps) - 2) {
-                    array_push($arrayFinalApps, $pastName);
-                    array_push($arrayFinalTimeIntervaleOfADay, $totalTime);
-                    array_push($arrayFinalDates, $pastDate);
-                }
+                $arrayFinalTimeIntervaleOfADay[$i] = $totalTime;
             } else {
-                var_dump($totalTime);
-                
+                $totalTime = $arrayTimeIntervaleOfADay[$i];
                 array_push($arrayFinalApps, $pastName);
                 array_push($arrayFinalTimeIntervaleOfADay, $totalTime);
                 array_push($arrayFinalDates, $pastDate);
-                $totalTime = 0;
             }
-            $pastName = $arrayNames[$i];
-            $totalTime += $arrayTimeIntervaleOfADay[$i];
+            $pastName = $arrayOrderedNames[$i];
             $pastDate = $arrayDates[$i];
         }
         var_dump("holaaaaaaaaaaaaaa");
         var_dump(date("H:i:s", 3163276815));
-
-
 
         array_push($arrayFinalContainerOfAllInfo, $arrayFinalApps);
         array_push($arrayFinalContainerOfAllInfo, $arrayFinalTimeIntervaleOfADay);
@@ -124,5 +112,9 @@ class UsagesController extends Controller
         return response()->json([
             'message' => "App time used uploaded successfully"
         ], 200);
+    }
+
+    public function getUseTimes(Request $request)
+    {
     }
 }

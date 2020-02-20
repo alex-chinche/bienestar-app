@@ -90,4 +90,9 @@ class ApplicationsController extends Controller
             200
         );
     }
+    public function getApps(Request $request)
+    {
+        $appGot = Application::all();
+        return response($appGot, 200);
+    }
 }
