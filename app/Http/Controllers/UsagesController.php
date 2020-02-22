@@ -20,7 +20,6 @@ class UsagesController extends Controller
         $appsFullInfo = $appsInfo->readCSVinfo($request);
 
         $arrayNames = array_values($appsFullInfo[0]);
-        $arrayOrderedNames = sort($arrayNames);
         $arrayTimes = array_values($appsFullInfo[1]);
         $arrayStatus = array_values($appsFullInfo[2]);
         //dia del año Y/m/d
@@ -31,8 +30,8 @@ class UsagesController extends Controller
         $arrayDates = [];
         $arrayContainerOfAllInfo = [];
 
-
         for ($i = 0; $i < count($arrayTimes); $i++) {
+
             $timeSaved = strtotime($arrayTimes[$i]);
             if ($arrayStatus[$i] == "opens") {
                 $dayOfYearOpened = date("Y/m/d", $timeSaved);
@@ -48,7 +47,7 @@ class UsagesController extends Controller
                     //Seconds used before midnight
                     $timeBeforeMidnight = strtotime(86400) - strtotime($dayHourOpened);
                     $digitaltimeBeforeMidnight = date("H:i:s", $timeBeforeMidnight);
-                    array_push($arrayApps, $arrayOrderedNames[$i]);
+                    array_push($arrayApps, $arrayNames[$i]);
                     array_push($arrayTimeIntervaleOfADay, strtotime($digitaltimeBeforeMidnight));
                     array_push($arrayDates, strtotime($dateDayMinusOne));
 
@@ -56,7 +55,7 @@ class UsagesController extends Controller
 
                     $timeAfterMidnight = strtotime($dayHourClosed);
                     $digitaltimeAfterMidnight = date("H:i:s", $timeAfterMidnight);
-                    array_push($arrayApps, $arrayOrderedNames[$i]);
+                    array_push($arrayApps, $arrayNames[$i]);
                     array_push($arrayTimeIntervaleOfADay, strtotime($digitaltimeAfterMidnight));
                     array_push($arrayDates, strtotime($dayOfYearClosed));
 
@@ -64,57 +63,53 @@ class UsagesController extends Controller
                 } else {
                     $timeUsedPerDay = strtotime($dayHourClosed) - strtotime($dayHourOpened);
                     $digitalTimeUsedPerDay = date("H:i:s", $timeUsedPerDay);
-                    array_push($arrayApps, $arrayOrderedNames[$i]);
+                    array_push($arrayApps, $arrayNames[$i]);
                     array_push($arrayTimeIntervaleOfADay, strtotime($digitalTimeUsedPerDay));
                     array_push($arrayDates, strtotime($dayOfYearClosed));
                 }
             }
         }
-
         array_push($arrayContainerOfAllInfo, $arrayApps);
         array_push($arrayContainerOfAllInfo, $arrayTimeIntervaleOfADay);
         array_push($arrayContainerOfAllInfo, $arrayDates);
 
-        //////////////////
+        $user = new User;
+        $userController = new UserController;
+        $user = $userController->getUserFromToken($request);
 
-        $arrayFinalApps = [];
-        $arrayFinalTimeIntervaleOfADay = [];
-        $arrayFinalDates = [];
-        $arrayFinalContainerOfAllInfo = [];
 
-        $pastName = $arrayApps[0];
-        $pastDate = $arrayDates[0];
-        $totalTime = $arrayTimeIntervaleOfADay[0];
+        for ($i = 0; $i < count($arrayApps); $i++) {
+            $app = new Application;
+            $app = Application::where("name", $arrayApps[$i]);
+            print_r($app->name);
+            exit;
+            $appUsage = new Usage;
+            $appUsage->user_id = $user->id;
+            $appUsage->application_id = $app->id;
+            $digitalTime = date("H:i:s", $arrayTimeIntervaleOfADay[$i]);
+            $digitalDate = date("Y/m/d", $arrayDates[$i]);
+            $appUsage->time = $digitalTime;
+            $appUsage->date = $digitalDate;
 
-        for ($i = 1; $i < count($arrayApps) - 1; $i++) {
-            if ($arrayOrderedNames[$i] == $pastName && $arrayDates[$i] == $pastDate) {
-                $totalTime += $arrayTimeIntervaleOfADay[$i];
-                $arrayFinalTimeIntervaleOfADay[$i] = $totalTime;
-            } else {
-                $totalTime = $arrayTimeIntervaleOfADay[$i];
-                array_push($arrayFinalApps, $pastName);
-                array_push($arrayFinalTimeIntervaleOfADay, $totalTime);
-                array_push($arrayFinalDates, $pastDate);
-            }
-            $pastName = $arrayOrderedNames[$i];
-            $pastDate = $arrayDates[$i];
+            $appUsage->save();
         }
-        var_dump("holaaaaaaaaaaaaaa");
-        var_dump(date("H:i:s", 3163276815));
-
-        array_push($arrayFinalContainerOfAllInfo, $arrayFinalApps);
-        array_push($arrayFinalContainerOfAllInfo, $arrayFinalTimeIntervaleOfADay);
-        array_push($arrayFinalContainerOfAllInfo, $arrayFinalDates);
-        var_dump($arrayFinalContainerOfAllInfo);
-
-
-
         return response()->json([
-            'message' => "App time used uploaded successfully"
+            $arrayContainerOfAllInfo
         ], 200);
     }
-
     public function getUseTimes(Request $request)
     {
+        try {
+            $user = new User;
+            $userController = new UserController;
+            $user = $userController->getUserFromToken($request);
+            $usageGot = Usage::where("user_id", $user->id);
+
+            return response($usageGot, 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => "Not possible to get usages"
+            ], 401);
+        }
     }
 }
