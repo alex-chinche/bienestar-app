@@ -9,6 +9,7 @@ use App\Application;
 use App\Usage;
 use Illuminate\Http\Request;
 
+use function GuzzleHttp\Promise\all;
 
 class UsagesController extends Controller
 {
@@ -76,13 +77,11 @@ class UsagesController extends Controller
         $user = new User;
         $userController = new UserController;
         $user = $userController->getUserFromToken($request);
-
+        $app = new Application;
 
         for ($i = 0; $i < count($arrayApps); $i++) {
             $app = new Application;
-            $app = Application::where("name", $arrayApps[$i]);
-            print_r($app->name);
-            exit;
+            $app = Application::where("name", $arrayApps[$i])->first();
             $appUsage = new Usage;
             $appUsage->user_id = $user->id;
             $appUsage->application_id = $app->id;
@@ -103,7 +102,7 @@ class UsagesController extends Controller
             $user = new User;
             $userController = new UserController;
             $user = $userController->getUserFromToken($request);
-            $usageGot = Usage::where("user_id", $user->id);
+            $usageGot = Usage::where("user_id", $user->id)->get();
 
             return response($usageGot, 200);
         } catch (\Throwable $th) {
