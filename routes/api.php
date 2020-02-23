@@ -9,4 +9,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('postUseTimes', 'UsagesController@postUseTimes');
     Route::get('getApps', 'ApplicationsController@getApps');
     Route::get('getUseTimes', 'UsagesController@getUseTimes');
+    Route::get('getTotalUsagesPerApp', 'UsagesController@getTotalUsagesPerApp');
+    
 });

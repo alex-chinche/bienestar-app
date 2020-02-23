@@ -77,6 +77,9 @@ class UsagesController extends Controller
         $user = new User;
         $userController = new UserController;
         $user = $userController->getUserFromToken($request);
+
+        Usage::where("user_id", $user->id)->delete();
+
         $app = new Application;
 
         for ($i = 0; $i < count($arrayApps); $i++) {
@@ -98,6 +101,7 @@ class UsagesController extends Controller
     }
     public function getUseTimes(Request $request)
     {
+
         try {
             $user = new User;
             $userController = new UserController;
@@ -110,5 +114,29 @@ class UsagesController extends Controller
                 'message' => "Not possible to get usages"
             ], 401);
         }
+    }
+    public function getTotalUsagesPerApp(Request $request)
+    {
+        $user = new User;
+        $userController = new UserController;
+        $user = $userController->getUserFromToken($request);
+        $usageGot = Usage::where("user_id", $user->id)->get();
+        $usageGotArray = $usageGot->toArray();
+        $applicationIdsArray = array_unique(array_column($usageGotArray, "application_id"));
+
+        foreach ($applicationIdsArray as $appId) {
+            $usageByAppId[$appId] = array_column(array_filter($usageGotArray, function ($var) use ($appId) {
+                return ($var["application_id"] == $appId);
+            }), "time");
+        }
+        
+        $putotime = strtotime($usageByAppId[1][0], 'H:i:s');
+        var_dump($putotime);
+        // dd(date("H:i:s", strtotime($usageByAppId[1][0])));
+
+
+        $usosorimeraapp = $usageGot;
+        print($usosorimeraapp);
+        //print($usosorimeraapp);
     }
 }
