@@ -15,10 +15,18 @@ class CreateRestrictsTable extends Migration
     {
         Schema::create('restricts', function (Blueprint $table) {
             $table->increments('id');
+            $table->integer('user_id')->unsigned();
+            $table->integer('application_id')->unsigned();
+            $table->foreign('user_id')
+                ->references('id')->on('users');
+            $table->foreign('application_id')
+                ->references('id')->on('applications');
+            $table->time('max-possible-hour');
+            $table->time('min-possible-hour');
+            $table->time('max-time-used');
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      *
