@@ -129,12 +129,29 @@ class UsagesController extends Controller
 
         $usageGotArray = $usageGot->toArray();
         $applicationIdsArray = array_column($usageGotArray, "application_id");
-        print_r($applicationIdsArray);
-        exit;
+        $applicationTimesArray = array_column($usageGotArray, "time");
+        $applicationDatesArray = array_column($usageGotArray, "date");
+
         
+        $actualID = $applicationIdsArray[0];
+        $totalTime = $applicationTimesArray[0];
+        $actualDate = $applicationDatesArray[0];
+
+        for ($i = 0; $i < count($applicationIdsArray); $i++) {
+            $time = explode(':', $applicationTimesArray[$i]);
+            $intActualTime = date("s", $time[0]) * 3600 + date("s", $time[1]) * 60 + date("s", $time[2]);
+            if ($applicationIdsArray[$i] == $actualID && $applicationDatesArray[$i] == $actualDate) {
+                $totalTime += $intActualTime;
+                
+            } else {
+            }
+        }
+        print_r($totalTime);
+        exit;
+
 
         return response()->json(
-         
+
             200
         );
     }
@@ -214,7 +231,7 @@ class UsagesController extends Controller
                 $finalTime = date("s", $time[0]) * 3600 + date("s", $time[1]) * 60 + date("s", $time[2]);
                 $timeSummatory += $finalTime;
             }
-            $totalTime = $timeSummatory /$j;
+            $totalTime = $timeSummatory / $j;
             $digitalAverageTime = array("time" => date('H:i:s', $totalTime));
             array_push($usagesSummatory, $digitalAverageTime);
         }
