@@ -53,5 +53,28 @@ class RestrictsController extends Controller
 
     public function getRestrictions(Request $request)
     {
+        try {
+            $user = new User;
+            $userController = new UserController;
+            $user = $userController->getUserFromToken($request);
+            $restrictsGot = Restrict::where("user_id", $user->id)->get();
+
+            $usageGotArray = $restrictsGot->toArray();
+
+            $totalRestrictionsArray = [];
+
+            for ($i = 0; $i < count($usageGotArray); $i++) {
+                $totalRestrictionsArray[] = ['application_id' => $usageGotArray[$i]['application_id'], 'max_possible_hour' => $usageGotArray[$i]['max_possible_hour'], 'min_possible_hour' => $usageGotArray[$i]['min_possible_hour'], 'max_time_used' => $usageGotArray[$i]['max_time_used']];
+            }
+
+            return response()->json(
+                $totalRestrictionsArray,
+                200
+            );
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => "Not possible to get restrictions"
+            ], 401);
+        }
     }
 }

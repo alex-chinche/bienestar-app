@@ -15,6 +15,5 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('getDailyUsagesPerApp', 'UsagesController@getDailyUsagesPerApp');
 
     Route::post('postRestrictions', 'RestrictsController@postRestrictions');
-    
-   
+    Route::get('getRestrictions', 'RestrictsController@getRestrictions');
 });
