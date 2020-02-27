@@ -21,9 +21,9 @@ class CreateRestrictsTable extends Migration
                 ->references('id')->on('users');
             $table->foreign('application_id')
                 ->references('id')->on('applications');
-            $table->time('max-possible-hour');
-            $table->time('min-possible-hour');
-            $table->time('max-time-used');
+            $table->time('max_possible_hour');
+            $table->time('min_possible_hour');
+            $table->time('max_time_used');
             $table->timestamps();
         });
     }
