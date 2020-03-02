@@ -15,6 +15,16 @@ class CreateStoresTable extends Migration
     {
         Schema::create('stores', function (Blueprint $table) {
             $table->increments('id');
+            $table->integer('user_id')->unsigned();
+            $table->integer('application_id')->unsigned();
+            $table->foreign('user_id')
+                ->references('id')->on('users');
+            $table->foreign('application_id')
+                ->references('id')->on('applications');
+            $table->double('open_latitude');
+            $table->double('open_longitude');
+            $table->double('close_latitude');
+            $table->double('close_longitude');
             $table->timestamps();
         });
     }

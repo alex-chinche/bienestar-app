@@ -15,24 +15,17 @@ class UsagesController extends Controller
 {
     public function postUseTimes(Request $request)
     {
-        //crear usage $usage = new Usage;
         $appsInfo = new ApplicationsController;
-        //$appsFullInfo es el array que contiene los arrays de  name, date, status, longitude, latitude
         $appsFullInfo = $appsInfo->readCSVinfo($request);
-
         $arrayNames = array_values($appsFullInfo[0]);
         $arrayTimes = array_values($appsFullInfo[1]);
         $arrayStatus = array_values($appsFullInfo[2]);
-        //dia del año Y/m/d
-        //hora del dia H:i:s
-
         $arrayApps = [];
         $arrayTimeIntervaleOfADay = [];
         $arrayDates = [];
         $arrayContainerOfAllInfo = [];
 
         for ($i = 0; $i < count($arrayTimes); $i++) {
-
             $timeSaved = strtotime($arrayTimes[$i]);
             if ($arrayStatus[$i] == "opens") {
                 $dayOfYearOpened = date("Y/m/d", $timeSaved);
@@ -53,14 +46,13 @@ class UsagesController extends Controller
                     array_push($arrayDates, strtotime($dateDayMinusOne));
 
                     //Seconds used after midnight
-
                     $timeAfterMidnight = strtotime($dayHourClosed);
                     $digitaltimeAfterMidnight = date("H:i:s", $timeAfterMidnight);
                     array_push($arrayApps, $arrayNames[$i]);
                     array_push($arrayTimeIntervaleOfADay, strtotime($digitaltimeAfterMidnight));
                     array_push($arrayDates, strtotime($dayOfYearClosed));
 
-                    //caso normal
+                    //Normal case
                 } else {
                     $timeUsedPerDay = strtotime($dayHourClosed) - strtotime($dayHourOpened);
                     $digitalTimeUsedPerDay = date("H:i:s", $timeUsedPerDay);
@@ -77,9 +69,7 @@ class UsagesController extends Controller
         $user = new User;
         $userController = new UserController;
         $user = $userController->getUserFromToken($request);
-
         Usage::where("user_id", $user->id)->delete();
-
         $app = new Application;
 
         for ($i = 0; $i < count($arrayApps); $i++) {
@@ -97,22 +87,19 @@ class UsagesController extends Controller
             $digitalFinalTime = gmdate('H:i:s', $timeSummatory);
             $appUsage->time = $digitalFinalTime;
             $appUsage->date = $digitalDate;
-
             $appUsage->save();
         }
         return response()->json([
-            $arrayContainerOfAllInfo
+            'message' => "Usages uploaded succesfully"
         ], 200);
     }
     public function getUseTimes(Request $request)
     {
-
         try {
             $user = new User;
             $userController = new UserController;
             $user = $userController->getUserFromToken($request);
             $usageGot = Usage::where("user_id", $user->id)->get();
-
             return response($usageGot, 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -120,10 +107,10 @@ class UsagesController extends Controller
             ], 401);
         }
     }
+
     public function getDailyUsagesPerApp(Request $request)
     {
         return response()->json(
-
             200
         );
     }
@@ -134,17 +121,13 @@ class UsagesController extends Controller
         $userController = new UserController;
         $user = $userController->getUserFromToken($request);
         $usageGot = Usage::where("user_id", $user->id)->get();
-
         $usageGotArray = $usageGot->toArray();
-
         $applicationIdsArray = array_unique(array_column($usageGotArray, "application_id"));
-
         foreach ($applicationIdsArray as $appId) {
             $usageByAppId[$appId] = array_column(array_filter($usageGotArray, function ($var) use ($appId) {
                 return ($var["application_id"] == $appId);
             }), "time");
         }
-
         $usagesSummatory = [];
         $appsIds = [];
         for ($i = 1; $i < count($usageByAppId) + 1; $i++) {
@@ -163,33 +146,28 @@ class UsagesController extends Controller
             array_push($usagesSummatory, $digitalAverageTime);
         }
         $totalUsagesArray = [];
-
         for ($i = 0; $i < count($appsIds); $i++) {
             $totalUsagesArray[] = ['application_id' => $appsIds[$i]['id'], 'total_time' => $usagesSummatory[$i]['time']];
         }
-
         return response()->json(
             $totalUsagesArray,
             200
         );
     }
+
     public function getAverageTimePerApp(Request $request)
     {
         $user = new User;
         $userController = new UserController;
         $user = $userController->getUserFromToken($request);
         $usageGot = Usage::where("user_id", $user->id)->get();
-
         $usageGotArray = $usageGot->toArray();
-
         $applicationIdsArray = array_unique(array_column($usageGotArray, "application_id"));
-
         foreach ($applicationIdsArray as $appId) {
             $usageByAppId[$appId] = array_column(array_filter($usageGotArray, function ($var) use ($appId) {
                 return ($var["application_id"] == $appId);
             }), "time");
         }
-
         $usagesSummatory = [];
         $appsIds = [];
         for ($i = 1; $i < count($usageByAppId) + 1; $i++) {
@@ -208,11 +186,9 @@ class UsagesController extends Controller
             array_push($usagesSummatory, $digitalAverageTime);
         }
         $averageUsagesArray = [];
-
         for ($i = 0; $i < count($appsIds); $i++) {
             $averageUsagesArray[] = ['application_id' => $appsIds[$i]['id'], 'average_time' => $usagesSummatory[$i]['time']];
         }
-
         return response()->json(
             $averageUsagesArray,
             200

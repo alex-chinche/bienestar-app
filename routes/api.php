@@ -16,4 +16,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::post('postRestrictions', 'RestrictsController@postRestrictions');
     Route::get('getRestrictions', 'RestrictsController@getRestrictions');
+
+    Route::post('postLocations', 'StoresController@postLocations');
+    
 });
