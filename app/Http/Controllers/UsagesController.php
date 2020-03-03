@@ -110,6 +110,23 @@ class UsagesController extends Controller
 
     public function getDailyUsagesPerApp(Request $request)
     {
+        $user = new User;
+        $userController = new UserController;
+        $user = $userController->getUserFromToken($request);
+        $usageGot = Usage::where("user_id", $user->id)->get();
+        $usageGotArray = $usageGot->toArray();
+        $datesUniqueArray = array_unique(array_column($usageGotArray, "date"));
+        $apps = Application::all();
+        
+        for ($i=0; $i < count($datesUniqueArray); $i++) { 
+            for ($j=0; $j < count($apps); $j++) { 
+                if (condition) {
+                    # code...
+                }
+            }
+        }
+
+
         return response()->json(
             200
         );
