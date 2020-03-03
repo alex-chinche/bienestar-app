@@ -47,7 +47,7 @@ class StoresController extends Controller
                 $user = new User;
                 $userController = new UserController;
                 $user = $userController->getUserFromToken($request);
-                if (!Store::where("user_id", $user->id)->where("application_id", $i+1)) {
+                if (!Store::where("user_id", $user->id)->where("application_id", $i + 1)) {
                     $store = new Store;
                     $store->user_id = $user->id;
                     $store->application_id = $i + 1;
@@ -58,7 +58,7 @@ class StoresController extends Controller
 
                     $store->save();
                 } else {
-                    Store::where("user_id", $user->id)->where("application_id", $i+1)->delete();
+                    Store::where("user_id", $user->id)->where("application_id", $i + 1)->delete();
                     $store = new Store;
                     $store->user_id = $user->id;
                     $store->application_id = $i + 1;
@@ -70,12 +70,35 @@ class StoresController extends Controller
                     $store->save();
                 }
             }
-                return response()->json([
-                    'message' => "Locations uploaded succesfully"
-                ], 200);
+            return response()->json([
+                'message' => "Locations uploaded succesfully"
+            ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => "Not possible to upload locations"
+            ], 401);
+        }
+    }
+    public function getLocations(Request $request)
+    {
+        try {
+            $user = new User;
+            $userController = new UserController;
+            $user = $userController->getUserFromToken($request);
+            $locationsGot = Store::where("user_id", $user->id)->get();
+            $locationsGotArray = $locationsGot->toArray();
+            $totalLocationsArray = [];
+
+            for ($i = 0; $i < count($locationsGotArray); $i++) {
+                $totalLocationsArray[] = ['application_id' => $locationsGotArray[$i]['application_id'], 'open_latitude' => $locationsGotArray[$i]['open_latitude'], 'open_longitude' => $locationsGotArray[$i]['open_longitude'], 'close_latitude' => $locationsGotArray[$i]['close_latitude'], 'close_longitude' => $locationsGotArray[$i]['close_longitude']];
+            }
+            return response()->json(
+                $totalLocationsArray,
+                200
+            );
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => "Not possible to get locations"
             ], 401);
         }
     }
